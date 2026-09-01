@@ -1,0 +1,22 @@
+[project]
+name = "ana-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.19.1",
+    "faker>=40.37.0",
+    "fastapi[standard]>=0.141.1",
+    "gunicorn>=26.2.0",
+    "psycopg[binary]>=3.3.4",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "requests>=2.34.2",
+    "ruff>=0.16.4",
+    "slowapi>=0.1.10",
+    "sqlalchemy>=2.0.52",
+    "sqlmodel>=0.0.39",
+    "timescaledb>=0.2.1",
+    "uvicorn>=0.52.4",
+]

@@ -1,0 +1,36 @@
+services:
+  app:
+    image: analytics-api:v1
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.web
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./apps/api/src:/code:rw
+    develop:
+      watch:
+        - action: rebuild
+          path: apps/api/Dockerfile.web
+        - action: rebuild
+          path: apps/api/pyproject.toml
+        - action: rebuild
+          path: apps/api/uv.lock
+        - action: rebuild
+          path: compose.yaml
+  db_service:
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+
+volumes:
+  timescaledb_data:
