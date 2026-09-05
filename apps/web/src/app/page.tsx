@@ -5,15 +5,22 @@ import axios from "axios";
 import { Activity, Clock, Users, Globe } from "lucide-react";
 import DashboardHeader from "@/components/DashboardHeader";
 import KpiCard from "@/components/KpiCard";
-import TrafficChart from "@/components/TrafficChart";
+import TrafficChart, { TrafficDataPoint } from "@/components/TrafficChart";
+import OsChart, { OsDataPoint } from "@/components/OsChart";
 
-import OsChart from "@/components/OsChart";
+interface EventBucket {
+  bucket: string;
+  operating_system?: string;
+  page: string;
+  avg_duration: number;
+  count: number;
+}
 
-const API_URL = "http://localhost:8000/api/events/";
-const API_KEY = "super_secret_api_key";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/events/";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "super_secret_api_key";
 
-const fetchEvents = async () => {
-  const { data } = await axios.get(API_URL, {
+const fetchEvents = async (): Promise<EventBucket[]> => {
+  const { data } = await axios.get<EventBucket[]>(API_URL, {
     headers: { "X-API-Key": API_KEY },
   });
   return data;
@@ -29,32 +36,41 @@ export default function Dashboard() {
   if (error) return <div className="p-8 text-center text-red-400">Error loading data.</div>;
 
   // Process data for charts
-  const timeSeriesData = data?.reduce((acc: any, curr: any) => {
-    const time = new Date(curr.bucket).toLocaleDateString();
-    const existing = acc.find((item: any) => item.time === time);
-    if (existing) {
-      existing.views += curr.count;
-    } else {
-      acc.push({ time, views: curr.count });
-    }
-    return acc;
-  }, []) || [];
-  
-  const sortedTimeSeriesData = timeSeriesData.sort((a: any, b: any) => new Date(a.time).getTime() - new Date(b.time).getTime());
+  const timeSeriesData: TrafficDataPoint[] = data
+    ? data.reduce((acc: TrafficDataPoint[], curr: EventBucket) => {
+        const time = new Date(curr.bucket).toLocaleDateString();
+        const existing = acc.find((item) => item.time === time);
+        if (existing) {
+          existing.views += curr.count;
+        } else {
+          acc.push({ time, views: curr.count });
+        }
+        return acc;
+      }, [])
+    : [];
 
-  const osData = data?.reduce((acc: any, curr: any) => {
-    const os = curr.operating_system || "Unknown";
-    const existing = acc.find((item: any) => item.name === os);
-    if (existing) {
-      existing.value += curr.count;
-    } else {
-      acc.push({ name: os, value: curr.count });
-    }
-    return acc;
-  }, []) || [];
+  const sortedTimeSeriesData = [...timeSeriesData].sort(
+    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+  );
 
-  const totalViews = data?.reduce((sum: number, curr: any) => sum + curr.count, 0) || 0;
-  const avgDuration = data?.reduce((sum: number, curr: any) => sum + curr.avg_duration, 0) / (data?.length || 1) || 0;
+  const osData: OsDataPoint[] = data
+    ? data.reduce((acc: OsDataPoint[], curr: EventBucket) => {
+        const os = curr.operating_system || "Unknown";
+        const existing = acc.find((item) => item.name === os);
+        if (existing) {
+          existing.value += curr.count;
+        } else {
+          acc.push({ name: os, value: curr.count });
+        }
+        return acc;
+      }, [])
+    : [];
+
+  const totalViews = data ? data.reduce((sum: number, curr: EventBucket) => sum + curr.count, 0) : 0;
+  const avgDuration =
+    data && data.length > 0
+      ? data.reduce((sum: number, curr: EventBucket) => sum + (curr.avg_duration || 0), 0) / data.length
+      : 0;
 
   return (
     <div className="min-h-screen bg-gray-950 p-8 font-sans">

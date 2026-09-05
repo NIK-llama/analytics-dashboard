@@ -2,7 +2,12 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-export default function TrafficChart({ data }: { data: any[] }) {
+export interface TrafficDataPoint {
+  time: string;
+  views: number;
+}
+
+export default function TrafficChart({ data }: { data: TrafficDataPoint[] }) {
   return (
     <div className="bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-800">
       <h3 className="text-lg font-semibold text-gray-200 mb-6">Traffic Over Time</h3>
