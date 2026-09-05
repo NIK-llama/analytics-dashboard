@@ -185,9 +185,3 @@ From the repository root:
 - `pnpm build`: Builds all applications for production.
 - `pnpm lint`: Runs ESLint across the codebase.
 - `pnpm format`: Formats TypeScript and Markdown files with Prettier.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - feel free to modify and use it for personal and commercial projects.
